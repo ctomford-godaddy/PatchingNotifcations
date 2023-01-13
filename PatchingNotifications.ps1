@@ -52,11 +52,12 @@ foreach ($group in $uniqueAssignmentGroups) {
     }
     else {
         $templateSelection = Read-Host "Please select the template to use (1 PrePatch or 2 PostPatch)"
-
+        $patchDate = Get-Date -Format "MM/dd" (Read-Host -Prompt 'Enter the start date of patching, Ex: MM/dd')
         if ($templateSelection -eq "1") {
             $emailBody = Get-Content .\prePatchingEmail.html -Raw
             $emailBody = $emailBody -replace '{group}', $group
             $emailBody = $emailBody -replace '{servers}', $serversInGroup
+            $emailBody = $emailBody -replace '{date}', $patchDate
             $subject = "SRE-GPD Patching"
         }
         else {
@@ -68,6 +69,6 @@ foreach ($group in $uniqueAssignmentGroups) {
         Write-Host "Emails will be sent to: $memberEmails"
         Write-Host "Servers in group $($group):`n$serversInGroup"
         Write-Host ""
-        Send-MailMessage -To #ctomford@godaddy.com -From sre_gpd@godaddy.com -Subject $subject -Body $emailBody -BodyAsHtml -SmtpServer p3plemlrelay-v01.prod.phx3.secureserver.net
+        #Send-MailMessage -To $memberEmails -From sre_gpd@godaddy.com -Subject $subject -Body $emailBody -BodyAsHtml -SmtpServer p3plemlrelay-v01.prod.phx3.secureserver.net
     }
 }
