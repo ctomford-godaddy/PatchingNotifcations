@@ -1,0 +1,65 @@
+pipeline {
+	options { buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '25')	}
+	agent { label 'gen && windows' }
+	
+	parameters {
+				choice(name: 'PATCH_GROUP', choices: ['','MCX_GroupA_All','MCX_GroupB_All','MCX_GroupC_All','MCX_GroupD_All'], description: 'Select Patch Group')
+				choice(name: 'EMAIL_TEMPLATE', choices: ['','PrePatchEmail','PostPatchEmail'], description: 'Select Pre or Post Email')
+				string(name: 'PATCH_DATE', defaultValue: 'Not required for Post Patching', description: 'Enter Date of Patching MM/dd ex. 01/31')
+	}
+
+	stages {
+	
+		stage("Stash"){
+		
+			steps {			
+				deleteDir()
+				checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'SREOPS-GHEC-PAT-RO', url: 'https://github.com/gdcorp-cio/sreops-patching.git']]])
+				stash "notifications"
+			}		
+		}
+				
+		stage("Send-Email") {
+			
+			options { skipDefaultCheckout() }
+			
+			environment {
+				SNOW = credentials('a19a4b31-afbc-4464-af32-4ff07d040a0d')
+				SnowUser = "$SNOW_USR"
+				SnowPass = "$SNOW_PSW"
+			}
+
+						steps {			
+				
+				script{
+					if(PATCH_GROUP){
+						
+						if(EMAIL_TEMPLATE == 'PostPatchEmail' ){
+							echo 'sending Post Patching Emails'
+							echo PATCH_GROUP
+							deleteDir()
+							unstash "notifications"
+							// powershell './notifications/install-ps-modules.ps1'
+							// powershell './notifications/postPatchNotifications.ps1'
+							cleanWs()
+							
+						}
+						else if (PATCH_DATE != ""){
+							echo 'Sending Pre Patching Emails'
+							echo PATCH_GROUP
+							deleteDir()
+							unstash "notifications"
+							// powershell './notifications/install-ps-modules.ps1'
+							// powershell './notifications/prePatchNotifications.ps1'
+							cleanWs()
+						}
+						else{
+							echo 'Set a date for the patching to begin.'
+						}	
+					}
+					else{echo 'PATCH_GROUP does not exist - nothing to do.'}
+				}
+			}
+		}
+	}
+}
