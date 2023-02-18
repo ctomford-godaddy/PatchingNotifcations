@@ -42,6 +42,7 @@ foreach ($group in $groupMembers.Keys) {
     $emailTemplate = $emailTemplate -replace '{group}', $group
     $emailTemplate = $emailTemplate -replace '{servers}', $serversInGroup
     $subject = "SRE-GPD Patching Complete"
-    #Send-MailMessage -From sre_gpd@godaddy.com -To ctomford@godaddy.com -Subject $subject -Body $emailTemplate -BodyAsHtml -SmtpServer p3plemlrelay-v01.prod.phx3.secureserver.net
-    #Send-MailMessage -From sre_gpd@godaddy.com -To ctomford@godaddy.com -Bcc $($groupMembers[$group] -join ',') -Subject $subject -Body $emailTemplate -BodyAsHtml -SmtpServer p3plemlrelay-v01.prod.phx3.secureserver.net
+    ##### Used for testing #####
+    #Send-MailMessage -From sre_gpd@godaddy.com -To  -Subject $subject -Body $emailTemplate -BodyAsHtml -SmtpServer p3plemlrelay-v01.prod.phx3.secureserver.net
+    Send-MailMessage -From sre_gpd@godaddy.com -To sre_gpd@godaddy.com -Bcc $($groupMembers[$group] -join ',') -Subject $subject -Body $emailTemplate -BodyAsHtml -SmtpServer p3plemlrelay-v01.prod.phx3.secureserver.net
 }
